@@ -2,12 +2,36 @@ import json
 import requests
 import time
 import math
+from datetime import datetime
 
+def pushMessage(messagetitle, messagecontent, tokens):
+    for tok in tokens:
+        sendUrl = f'https://sctapi.ftqq.com/{tok}.send'
+        sendData = {'title': messagetitle, 'content': messagecontent}
+        # print(messageTitle)
+        # print(messageContent)
+        requests.post(sendUrl, data=sendData)
 
-def pushMessage(message, token):
-    sendUrl = f'http://sc.ftqq.com/{token}.send?text={message}'
-    requests.get(sendUrl)
+def processData(result, historyMin):
+    priceDict = {}
+    for idate, iprice in result.items():
+        day = datetime.strptime(idate, "%Y%m%d")
+        day_weekday = day.weekday() + 1
+        if day_weekday >= 5: # skip Monday to Wednesday
+            priceDict[day.strftime("%m-%d") + "(" + str(day_weekday) + ")"] = iprice
 
+    minPrice = min(priceDict.values())
+    dateWithMin = [x for x in priceDict if priceDict[x] == minPrice]
+
+    historyMin = min(minPrice, historyMin)
+    title = f"当前低价: {minPrice}, 历史最低: {historyMin}"
+    content = "### " + " ".join(dateWithMin)
+    content += "\n\n所有日期价格:"
+    for idate, iprice in priceDict.items():
+        content += "\n\n"
+        content += idate + ": " + str(iprice)
+
+    return title, content, minPrice
 
 if __name__ == "__main__":
     # first import the json config file
@@ -18,32 +42,17 @@ if __name__ == "__main__":
     url = f'https://flights.ctrip.com/itinerary/api/12808/lowestPrice?flightWay={config["flightWay"]}&dcity={config["placeFrom"]}&acity={config["placeTo"]}&direct=true&army=false'
 
     # get the price periodicly and alert through wechat
-    targetPrice = 0
+    targetPrice = config["targetPrice"]
+    histMin = 9999 # renew each month
     while True:
         r = requests.get(url)
         if r.status_code != 200 or r.json()["status"] == 2:
-            print("无法获取机票信息,等待30s后重新尝试获取")
-            for i in range(30):
-                print(".", end="")
-                time.sleep(1)
-            print("\n等待完毕，尝试重新获取机票信息")
-            continue
+            pushMessage('机票信息获取失败', f'{time.strftime("%Y-%m-%d %H:%M")}', config["ftqq_SCKEY"])
         else:
             result = r.json()["data"]["oneWayPrice"][0]
-            if not config["dateToGo"] in result:
-                print("未能找到指定日期机票价格，请检查日期是否过长或者是过期日期")
-                exit()
-            else:
-                currentPrice = result[config["dateToGo"]]
-                if targetPrice == 0:
-                    print(f'当前票价:{currentPrice}，第一次获取票价请检查微信推送')
-                    pushMessage(
-                        f'第一次推送，当前价格{currentPrice}-当前时间:{time.strftime("%H-%m-%S",time.localtime())}', config["ftqq_SCKEY"])
-                    targetPrice = currentPrice
-                else:
-                    if abs(currentPrice - targetPrice) >= config["priceStep"]:
-                        pushMessage(
-                            f'价格变化超过设定值，当前价格{currentPrice},变化:{currentPrice-targetPrice},当前时间:{time.strftime("%H:%m:%S",time.localtime())}', config["ftqq_SCKEY"])
-                        targetPrice = currentPrice
-        print(f'当前轮次查询完毕，等待{config["sleepTime"]}s后继续查询价格')
+            messageTitle, messageContent, minPrice = processData(result, histMin)
+            histMin = min(minPrice, histMin)
+            if minPrice <= targetPrice:
+                pushMessage(messageTitle, messageContent, config["ftqq_SCKEY"])
+        print(f'{time.strftime("%Y-%m-%d %H:%M")}：查询完毕')
         time.sleep(config["sleepTime"])

@@ -1,9 +1,8 @@
 {
-    "dateToGo":"20230205",
     "placeFrom":"SHA",
     "placeTo":"BJS",
     "flightWay":"Oneway",
     "sleepTime": 86400,
-    "priceStep": 25,
-    "ftqq_SCKEY":"SCT192982Tl3xYyhPlK5kx31D0S8n4KIWW"
+    "targetPrice": 500,
+    "ftqq_SCKEY": [""]
 }
