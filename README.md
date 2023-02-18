@@ -1,7 +1,7 @@
-# 机票价格监视程序(带微信提醒功能)
+# 机票价格监视程序
 
-通过调用[携程 api](https://github.com/liangen1/-xiechengjipiao_aip),当机票价格变化之达到设定值时通过微信推送消息提醒。
-本程序通过方糖推实现微信推送功能https://sc.ftqq.com/3.version.
+通过调用[携程 api](https://github.com/liangen1/-xiechengjipiao_aip)，当机票价格低于设定值时通过微信推送消息提醒（只看周末）。
+本程序通过方糖推实现微信推送功能 https://sc.ftqq.com/3.version 。
 
 本程序仅供个人学习使用，请勿用于商业用途。
 
@@ -32,13 +32,12 @@ python flightAlert.py
 
 ## config.json 文件配置
 
--   config.json 中每一项的意思如下：
--   dateToGo: 期望的日期，日期不能距离当前日期过长
+config.json 中每一项的意思如下：
 -   placeFrom: 发出机场代号，具体见后面的说明
 -   placeTo: 到达继承代号，具体见后面的说明
 -   flightWay: 机票类型，OneWay 代表单程票，如果要查询往返票使用 Roundtrip
--   sleepTime: 查询间隔，推荐间隔为 3600,即 3600s（一小时）一次
--   priceStep: 当价格发生多大的变化时进行提醒，根据需求适当进行设置
+-   sleepTime: 查询间隔，推荐间隔为 3600，即 3600s（一小时）一次
+-   targetPrice: 当价格低于多少时进行提醒，根据需求适当进行设置
 -   ftqq_SCKEY: 方糖（server 酱）的 token，根据[方糖网站](https://sc.ftqq.com/3.version)的说明进行获取
 
 ## 机场代号说明：
