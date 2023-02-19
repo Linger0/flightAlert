@@ -1,3 +1,2 @@
-id_rsa*
-*.log
 venv
+config.json
