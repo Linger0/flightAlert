@@ -1,8 +1,0 @@
-{
-    "placeFrom":"SHA",
-    "placeTo":"BJS",
-    "flightWay":"Oneway",
-    "sleepTime": 86400,
-    "targetPrice": 500,
-    "ftqq_SCKEY": [""]
-}
