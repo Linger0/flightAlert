@@ -45,7 +45,7 @@ def monitorCertainDates(results, priceStep, datesTogo, datesBack, history, citie
     history['minLeav'] = histMinLeav
     history['minBack'] = histMinBack
 
-    title = f' Current price to {cto}: {minLeavPrice} ↔ {minBackPrice}'
+    title = f' Price to {cto}: {minLeavPrice} ↔ {minBackPrice}'
     content = f'*{cfrom}–{cto}:*\n\n'
     for date, price in resLeavDates.items():
         content += '**' + date[4:6] + '-' + date[6:8] + f': {price}**\n\n'
@@ -59,8 +59,9 @@ def monitorCertainDates(results, priceStep, datesTogo, datesBack, history, citie
     return title, content, toSend
 
 # Obtain the lowest price for departure and return trip.
-def monitor2MonthWeekend(results, targetPrice, **skip):
+def monitor2MonthWeekend(results, targetPrice, cities, **skip):
     resLeav, resBack = results
+    cfrom, cto = cities
     priceLeavDict = {}
     priceBackDict = {}
     for date in resLeav:
@@ -80,10 +81,10 @@ def monitor2MonthWeekend(results, targetPrice, **skip):
     dateMinBack = [x for x in priceBackDict if priceBackDict[x] == minBackPrice]
     maxMinPrice = max(minLeavPrice, minBackPrice)
 
-    title = f' Lowest price: {minLeavPrice} (SHA–BJS) ↔ {minBackPrice} (BJS-SHA)'
-    content = f"### {minLeavPrice} (SHA–BJS): " + " ".join(dateMinLeav)
-    content += f"\n\n### {minBackPrice} (BJS-SHA): " + " ".join(dateMinBack)
-    content += "\n\nPrice list:\n\n&emsp;&emsp;&emsp;&emsp;SHA–BJS&ensp;BJS–SHA\n\n---"
+    title = f' Lowest: {minLeavPrice} ({cfrom}–{cto}) ↔ {minBackPrice}'
+    content = f"### {minLeavPrice} ({cfrom}–{cto}): " + " ".join(dateMinLeav)
+    content += f"\n\n### {minBackPrice} ({cto}-{cfrom}): " + " ".join(dateMinBack)
+    content += f"\n\nPrice list:\n\n&emsp;&emsp;&emsp;&emsp;{cfrom}–{cto}&ensp;{cto}–{cfrom}\n\n---"
     for date in priceLeavDict:
         content += "\n\n"
         weekday = date[6]
@@ -103,7 +104,6 @@ def monitor2MonthWeekend(results, targetPrice, **skip):
 
 if __name__ == "__main__":
     test = False
-    mode = 1
 
     baseUrl = "https://flights.ctrip.com/itinerary/api/12808/lowestPrice?"
     # first import the json config file
@@ -116,6 +116,7 @@ if __name__ == "__main__":
     # get the price periodicly and alert through wechat
     targetPrice = config["targetPrice"]
     priceStep = config["priceStep"]
+    mode = config["mode"]
     history = {"minLeav": 9999, "prevLeav": 0, "minBack": 9999, "prevBack": 0}
     releaseMessage = printMessage if test else pushMessage
     while True:
@@ -133,7 +134,8 @@ if __name__ == "__main__":
                 messageTitle, messageContent, toSend = monitorCertainDates(
                     [resLeav, resBack], priceStep, config['dateToGo'], config['dateBack'], history, [config['placeFrom'], config['placeTo']])
             elif mode == 2:
-                messageTitle, messageContent, toSend = monitor2MonthWeekend([resLeav, resBack], targetPrice=targetPrice)
+                messageTitle, messageContent, toSend = monitor2MonthWeekend([resLeav, resBack], targetPrice=targetPrice, 
+                    cities=[config['placeFrom'], config['placeTo']])
             # send message
             if toSend:
                 releaseMessage(messageTitle, messageContent, config["ftqq_SCKEY"])
@@ -141,6 +143,6 @@ if __name__ == "__main__":
         print(f'{time.strftime("%Y-%m-%d %H:%M")} finished. Waiting for tomorrow.')
 
         if not test:
-            time.sleep((datetime.strptime("17:00:00", "%H:%M:%S") - datetime.now()).seconds)
+            time.sleep((datetime.strptime("10:00:00", "%H:%M:%S") - datetime.now()).seconds)
         else:
             break

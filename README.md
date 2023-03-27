@@ -44,6 +44,7 @@ E.g.
 
 ```json
 {
+    "mode": 1, // 1 for certain days, 2 for future 2 months
     "dateToGo": ["20230429", "20230430"],
     "dateBack": ["20230503"],
     "placeFrom": "SHA",
