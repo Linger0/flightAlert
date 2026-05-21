@@ -1,0 +1,11 @@
+{
+  "mode": 1,
+  "dateToGo": ["20260601", "20260602"],
+  "dateBack": ["20260605"],
+  "placeFrom": "SHA",
+  "placeTo": "BJS",
+  "targetPrice": 1000,
+  "priceStep": 20,
+  "pollTime": "10:00:00",
+  "ftqq_SCKEY": ["SCTxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"]
+}
